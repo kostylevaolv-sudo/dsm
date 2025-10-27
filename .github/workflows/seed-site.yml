@@ -1,0 +1,708 @@
+name: Seed multi-page site (green)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate site files
+        run: |
+          set -e
+          mkdir -p assets/css assets/js partials
+          echo > .nojekyll
+
+          cat > assets/css/style.css << 'EOF'
+:root{
+  --brand:#1A554F;  /* зелёный */
+  --accent:#B89F4D; /* золотой */
+  --bg:#0E1A18;     /* тёмный фон hero */
+  --surface:#FFFFFF;
+  --text:#0F172A;
+  --muted:#6B7280;
+  --line:#E5E7EB;
+  --danger:#EF4444;
+  --radius:14px;
+  --shadow:0 10px 30px rgba(3,7,18,.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:#F5F7F9;
+  line-height:1.55;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* Header */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:70px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-logo{height:44px;width:auto;display:block}
+.brand-title{font-weight:800;color:#0B1220;letter-spacing:.2px}
+.brand-sub{font-size:12px;color:var(--muted);margin-top:-4px}
+.menu{display:flex;gap:22px;align-items:center}
+.menu a{color:#0B1220;font-weight:600}
+.menu a[aria-current="page"]{color:var(--brand);text-decoration:underline}
+.cta{display:inline-flex;align-items:center;gap:10px;background:var(--brand);color:#fff;border:0;padding:12px 18px;border-radius:12px;font-weight:800;box-shadow:var(--shadow);cursor:pointer}
+.cta.secondary{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.cta.accent{background:var(--accent);color:#1A1A1A}
+
+/* Hero */
+.hero{
+  color:#fff;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(26,85,79,.28), transparent 60%),
+    url('https://images.unsplash.com/photo-1523861751938-68b767b803f6?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat,
+    var(--bg);
+}
+.hero .wrap{backdrop-filter:brightness(.9);padding:80px 0}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+.eyebrow{display:inline-block;background:rgba(255,255,255,.14);padding:6px 10px;border-radius:30px;font-size:13px;letter-spacing:.4px}
+h1{font-size:44px;line-height:1.1;margin:16px 0 14px;font-weight:800}
+.lead{font-size:18px;color:#E5E7EB;max-width:720px}
+.hero-cta{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+.kpi{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:14px;border-radius:12px}
+.kpi strong{display:block;font-size:22px;color:#fff}
+
+/* Sections and cards */
+.section{padding:64px 0;background:#fff}
+.section.alt{background:#F0F5F3}
+h2{font-size:34px;margin:0 0 12px}
+.sub{color:var(--muted);margin-bottom:26px}
+.grid{display:grid;gap:20px}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 3px 16px rgba(2,6,23,.06);padding:20px}
+.icon{width:38px;height:38px;border-radius:10px;background:#EAF1EF;display:grid;place-items:center;color:var(--brand);margin-bottom:10px}
+.list{margin:8px 0 0;padding-left:18px;color:#4B5563}
+.list li{margin:6px 0}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px dashed var(--line);border-radius:999px;color:#374151;background:#fff}
+
+/* Projects */
+.project{display:grid;grid-template-columns:.9fr 1.1fr;gap:18px;align-items:center}
+.project img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.dl{display:grid;grid-template-columns:160px 1fr;gap:8px;margin-top:8px}
+.dl div:nth-child(odd){color:#6B7280}
+
+/* Forms */
+.form{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
+input,select,textarea{width:100%;padding:12px 12px;border:1px solid #D1D5DB;border-radius:12px;background:#fff;font:inherit}
+textarea{min-height:120px;resize:vertical}
+.help{font-size:12px;color:var(--muted)}
+.status{margin-top:10px;font-size:14px}
+.danger{color:var(--danger)}
+.pill{display:inline-block;background:#FBF6E7;color:#6E5A22;border:1px solid var(--accent);padding:4px 10px;border-radius:999px;font-size:13px}
+
+/* Sticky CTA bar */
+.sticky-bar{
+  position:fixed;left:0;right:0;bottom:-120px;z-index:60;
+  transition:bottom .3s ease;display:flex;justify-content:center;
+}
+.sticky-bar .inner{
+  display:flex;gap:12px;align-items:center;background:#173B36;color:#fff;
+  border:1px solid #214A44;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow)
+}
+.sticky-bar.show{bottom:16px}
+.sticky-bar a{color:#DCC885}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:70;padding:20px}
+.modal.open{display:flex}
+.modal .dialog{background:#fff;border-radius:16px;max-width:520px;width:100%;box-shadow:var(--shadow);padding:18px;border:1px solid var(--line)}
+.modal .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.modal .close{background:none;border:0;font-size:22px;cursor:pointer}
+
+/* Footer */
+footer{background:#0E1A18;color:#CBD5E1;padding:36px 0}
+footer a{color:#DCC885}
+.foot-grid{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:20px}
+.legal{font-size:12px;color:#9CA3AF;margin-top:10px}
+
+/* Responsive */
+@media (max-width:1024px){
+  .hero-grid,.project{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid.cols-3{grid-template-columns:repeat(2,1fr)}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .menu{display:none}
+  .kpis{grid-template-columns:1fr}
+  .grid.cols-3{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+  h1{font-size:34px}
+  h2{font-size:28px}
+  .nav{height:64px}
+}
+
+/* Utils */
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.mt-24{margin-top:24px}.mt-28{margin-top:28px}
+EOF
+
+          cat > assets/js/main.js << 'EOF'
+// Плавный скролл по якорям
+document.addEventListener('click', (e)=>{
+  const a = e.target.closest('a[href^="#"]');
+  if(!a) return;
+  const id = a.getAttribute('href').slice(1);
+  const el = document.getElementById(id);
+  if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
+});
+
+// Активная ссылка меню
+(function setActiveNav(){
+  const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('.menu a').forEach(a=>{
+    const href = (a.getAttribute('href')||'').toLowerCase();
+    if((path === '' && href === 'index.html') || href === path) a.setAttribute('aria-current','page');
+    if(path === 'index.html' && href === 'index.html') a.setAttribute('aria-current','page');
+  });
+})();
+
+// Липкая панель CTA
+const sticky = document.getElementById('stickyBar');
+let stickyOnce = false;
+window.addEventListener('scroll', () => {
+  const y = window.scrollY || document.documentElement.scrollTop;
+  if(y > 600) sticky?.classList.add('show'); else if(!stickyOnce) sticky?.classList.remove('show');
+});
+
+// Модалка
+const modal = document.getElementById('modal');
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('[data-open="callback"]')) modal?.classList.add('open');
+  if(e.target.id === 'modalClose') modal?.classList.remove('open');
+});
+modal?.addEventListener('click', (e)=>{ if(e.target === modal) modal.classList.remove('open'); });
+
+// Exit-intent
+let exitShown = false;
+document.addEventListener('mouseleave', (e)=>{
+  if(e.clientY <= 0 && !exitShown){ exitShown = true; modal?.classList.add('open'); }
+});
+
+// Универсальная отправка форм
+function attachForms(){
+  document.querySelectorAll('form[data-form]').forEach(form=>{
+    const status = form.querySelector('.status');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      const errs = [];
+      if(data.hp && data.hp.trim() !== '') return;
+
+      if(!data.name || data.name.trim().length < 2) errs.push('Имя');
+      if(!data.phone || data.phone.replace(/\D/g,'').length < 10) errs.push('Телефон');
+      const needEmail = form.querySelector('input[type="email"][required]');
+      if(needEmail && (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))) errs.push('Email');
+      const agree = form.querySelector('#agree') || form.querySelector('#agree2');
+      if(agree && !agree.checked) errs.push('Согласие');
+
+      if(errs.length){
+        status.textContent = 'Заполните: ' + errs.join(', ');
+        status.className = 'status danger';
+        return;
+      }
+      try{
+        const resp = await fetch('https://httpbin.org/post', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({source:'dsm-site', page: location.pathname, ...data})
+        });
+        if(resp.ok){
+          status.textContent = 'Спасибо! Мы свяжемся в течение рабочего дня.';
+          status.className = 'status';
+          form.reset();
+        }else throw new Error('net');
+      }catch(err){
+        status.textContent = 'Не удалось отправить. Напишите на info@gk-dsm.ru';
+        status.className = 'status danger';
+      }
+    });
+  });
+}
+attachForms();
+EOF
+
+          cat > partials/header.html << 'EOF'
+<header class="topbar" role="banner">
+  <div class="container nav">
+    <a class="brand" href="index.html">
+      <img class="brand-logo" src="assets/logo.png" onerror="this.src='assets/logo.svg'" alt="ДСМ‑груп — логотип" />
+      <div>
+        <div class="brand-title">ДСМ‑груп</div>
+        <div class="brand-sub">Строительство под ключ</div>
+      </div>
+    </a>
+    <nav class="menu" aria-label="Главное меню">
+      <a href="services.html">Услуги</a>
+      <a href="projects.html">Проекты</a>
+      <a href="about.html">О компании</a>
+      <a href="contacts.html">Контакты</a>
+      <button class="cta accent" data-open="callback">Перезвоните мне</button>
+    </nav>
+  </div>
+</header>
+EOF
+
+          cat > partials/footer.html << 'EOF'
+<!-- Липкая панель -->
+<div class="sticky-bar" id="stickyBar" aria-hidden="true">
+  <div class="inner">
+    <span>Готовы обсудить проект?</span>
+    <a href="tel:+79819795429">+7 (981) 979‑54‑29</a>
+    <button class="cta accent" data-open="callback">Запросить смету</button>
+  </div>
+</div>
+
+<!-- Модалка -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="cbTitle">
+  <div class="dialog">
+    <div class="head">
+      <h3 id="cbTitle">Оставьте телефон — перезвоним</h3>
+      <button class="close" id="modalClose" aria-label="Закрыть">×</button>
+    </div>
+    <form class="form" data-form novalidate>
+      <div class="row">
+        <div><label>Имя</label><input name="name" required></div>
+        <div><label>Телефон</label><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
+      </div>
+      <input type="text" name="hp" style="display:none">
+      <div class="mt-12"><input type="checkbox" id="agree2" required> <label for="agree2" class="help">Согласен(на) с обработкой данных</label></div>
+      <div class="mt-12"><button class="cta accent" type="submit">Жду звонка</button></div>
+      <div class="status"></div>
+    </form>
+  </div>
+</div>
+
+<footer role="contentinfo">
+  <div class="container foot-grid">
+    <div>
+      <div class="brand" style="text-decoration:none">
+        <img class="brand-logo" src="assets/logo.png" onerror="this.src='assets/logo.svg'" alt="ДСМ‑груп — логотип" />
+        <div>
+          <div class="brand-title" style="color:#fff">ДСМ‑груп</div>
+          <div class="brand-sub" style="color:#DCC885">Строительство под ключ</div>
+        </div>
+      </div>
+      <p class="legal">© 2025 ООО «ДСМ‑груп». Все права защищены.</p>
+      <p class="legal">Информация не является публичной офертой.</p>
+    </div>
+    <div>
+      <h4>Навигация</h4>
+      <p><a href="services.html">Услуги</a> · <a href="projects.html">Проекты</a> · <a href="about.html">О компании</a> · <a href="contacts.html">Контакты</a></p>
+      <p><a href="privacy.html">Политика конфиденциальности</a></p>
+    </div>
+    <div>
+      <h4>Контакты</h4>
+      <p>Санкт-Петербург, Торфяная дорога 7Ф, офис 1023, БЦ «Гуливер‑2»</p>
+      <p>Тел.: <a href="tel:+79819795429">+7 (981) 979‑54‑29</a></p>
+      <p>Email: <a href="mailto:info@gk-dsm.ru">info@gk-dsm.ru</a></p>
+      <form class="form mt-12" data-form novalidate>
+        <label>Перезвонить вам?</label>
+        <div class="row">
+          <div><input name="name" placeholder="Имя" required></div>
+          <div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
+        </div>
+        <input type="text" name="hp" style="display:none">
+        <div class="mt-12"><button class="cta" type="submit">Жду звонка</button></div>
+        <div class="status"></div>
+      </form>
+    </div>
+  </div>
+</footer>
+
+<!-- Подключаем основной JS -->
+<script src="assets/js/main.js"></script>
+EOF
+
+          cat > index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ДСМ‑груп — строительство промышленных и коммерческих объектов</title>
+  <meta name="description" content="Генподряд, проектирование и строительство промышленных и коммерческих объектов. Зелёная тема бренда. Смета за 24 часа." />
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">Генподряд • Проектирование • Ввод в эксплуатацию</span>
+          <h1>Промышленные и коммерческие объекты под ключ</h1>
+          <p class="lead">Полный цикл: от идеи и предпроекта до стройки и передачи объекта. В приоритете — сроки, безопасность и качество.</p>
+          <form class="form mt-16" data-form novalidate>
+            <div class="row">
+              <div><label>Имя</label><input name="name" placeholder="Ваше имя" required></div>
+              <div><label>Телефон</label><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
+            </div>
+            <input type="text" name="hp" style="display:none">
+            <div class="mt-12"><button class="cta accent" type="submit">Получить консультацию</button></div>
+            <div class="status"></div>
+          </form>
+          <div class="kpis">
+            <div class="kpi"><strong>15+ лет</strong><span>на рынке</span></div>
+            <div class="kpi"><strong>2,1 млн м²</strong><span>построено</span></div>
+            <div class="kpi"><strong>98%</strong><span>объектов вовремя</span></div>
+            <div class="kpi"><strong>0 LTI</strong><span>инцидентов</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="badge" style="border-color:#E9E2CF;background:#FBF6E7;color:#6E5A22">СРО • ISO 9001/14001/45001</div>
+            <p class="mt-12">Работаем по всей России и ЕАЭС. Фиксируем срок и цену. Прозрачная отчётность, авторнадзор, BIM и 4D‑планирование.</p>
+            <p class="help mt-12">Документы и свидетельства предоставим по запросу.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <h2>Услуги</h2>
+        <p class="sub">Закрываем полный цикл реализации объектов капитального строительства.</p>
+        <div class="grid cols-3">
+          <div class="card"><div class="icon">🏗️</div><h3>Генподряд</h3><ul class="list"><li>Сроки, бюджет, риски</li><li>Субподрядчики</li><li>Комплектация</li></ul><form class="form mt-12" data-form novalidate><label>Получить КП</label><div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div><input type="text" name="hp" style="display:none"><div class="mt-12"><button class="cta" type="submit">Запросить</button></div><div class="status"></div></form></div>
+          <div class="card"><div class="icon">📐</div><h3>Проектирование</h3><ul class="list"><li>ТЭП, BIM</li><li>Изыскания</li><li>АР/КР/ОВ/ВК/ЭО/СС</li></ul><form class="form mt-12" data-form novalidate><label>Получить смету</label><div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div><input type="text" name="hp" style="display:none"><div class="mt-12"><button class="cta" type="submit">Отправить</button></div><div class="status"></div></form></div>
+          <div class="card"><div class="icon">🏭</div><h3>Промышленные здания</h3><ul class="list"><li>Корпуса, цеха</li><li>КМ/КМД, ЖБ</li><li>Краны, проёмы</li></ul><form class="form mt-12" data-form novalidate><label>Обсудить объект</label><div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div><input type="text" name="hp" style="display:none"><div class="mt-12"><button class="cta" type="submit">Связаться</button></div><div class="status"></div></form></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt">
+      <div class="container">
+        <h2>Выбранные проекты</h2>
+        <p class="sub">Полный портфель — по запросу.</p>
+        <div class="card project">
+          <img alt="Логистический комплекс" src="https://images.unsplash.com/photo-1590318230018-ed3a5f0a1a25?q=80&w=1200&auto=format&fit=crop" />
+          <div>
+            <h3>Логистический центр «Север»</h3>
+            <div class="dl"><div>Локация</div><div>МО</div><div>Площадь</div><div>62 000 м²</div><div>Срок</div><div>11 мес.</div><div>Роль</div><div>Генподряд</div></div>
+            <form class="form mt-12" data-form novalidate>
+              <label>Получить расчёт по похожему проекту</label>
+              <div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div>
+              <input type="text" name="hp" style="display:none">
+              <div class="mt-12"><button class="cta accent" type="submit">Получить расчёт</button></div>
+              <div class="status"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2>Запросите смету</h2>
+        <p class="sub">Вернёмся с предварительным решением в течение 24 часов.</p>
+        <form class="form" data-form novalidate>
+          <div class="row">
+            <div><label>Имя и компания</label><input name="name" placeholder="Иван Петров, ООО «Пример»" required></div>
+            <div><label>Телефон</label><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
+            <div><label>Email</label><input type="email" name="email" placeholder="you@example.com" required></div>
+            <div><label>Тип объекта</label><select name="type" required><option value="">Выберите...</option><option>Склад / Логистика</option><option>Производство</option><option>Торговый объект</option><option>Офис / БЦ</option><option>Реконструкция</option></select></div>
+            <div><label>Площадь, м²</label><input name="area" placeholder="Например, 25000"></div>
+            <div><label>Город</label><input name="city" placeholder="Город/регион"></div>
+          </div>
+          <label class="mt-12">Кратко о проекте</label>
+          <textarea name="message" placeholder="Стадия, сроки, требования, бюджетные рамки..."></textarea>
+          <input type="text" name="hp" style="display:none">
+          <div class="mt-12"><input type="checkbox" id="agree" required> <label for="agree" class="help">Согласен(на) с обработкой данных</label></div>
+          <div class="mt-12"><button class="cta accent" type="submit">Отправить запрос</button> <span class="help">или info@gk-dsm.ru</span></div>
+          <div class="status"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script>
+    Promise.all([
+      fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
+      fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
+    ]);
+  </script>
+</body>
+</html>
+EOF
+
+          cat > services.html << 'EOF'
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Услуги — ДСМ‑груп</title>
+<link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css">
+</head><body>
+<div id="site-header"></div>
+<main>
+  <section class="section">
+    <div class="container">
+      <h2>Генподряд и проектирование</h2>
+      <p class="sub">От предпроектной стадии до ввода в эксплуатацию.</p>
+      <div class="grid cols-3">
+        <div class="card"><div class="icon">🏗️</div><h3>Генподряд</h3><ul class="list"><li>Управление сроками и бюджетом</li><li>Подрядчики и ПТО</li><li>Комплектация</li></ul></div>
+        <div class="card"><div class="icon">📐</div><h3>Проектирование</h3><ul class="list"><li>BIM/4D, коллизии</li><li>Изыскания</li><li>АР/КР/ОВ/ВК/ЭО/СС</li></ul></div>
+        <div class="card"><div class="icon">🧰</div><h3>Инженерные системы</h3><ul class="list"><li>ОВ/ВК/ЭО/СС</li><li>Пожарная безопасность</li><li>SCADA, слаботочка</li></ul></div>
+      </div>
+
+      <div class="grid cols-3 mt-24">
+        <div class="card"><div class="icon">🏭</div><h3>Промышленные здания</h3><ul class="list"><li>Корпуса, цеха</li><li>КМ/КМД, ЖБ</li><li>Краны, проёмы</li></ul></div>
+        <div class="card"><div class="icon">📦</div><h3>Склады A/A+</h3><ul class="list"><li>Доки, ESFR</li><li>Температурные зоны</li><li>WMS‑инфраструктура</li></ul></div>
+        <div class="card"><div class="icon">🏢</div><h3>Офисы и ТРЦ</h3><ul class="list"><li>Оболочка и fit‑out</li><li>BMS, МГН</li><li>Навигация</li></ul></div>
+      </div>
+
+      <div class="card mt-24">
+        <h3>Получить предварительную смету</h3>
+        <form class="form mt-12" data-form novalidate>
+          <div class="row">
+            <div><label>Имя</label><input name="name" required></div>
+            <div><label>Телефон</label><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
+            <div><label>Email</label><input type="email" name="email" placeholder="you@example.com" required></div>
+            <div><label>Тип объекта</label><select name="type" required><option value="">Выберите...</option><option>Склад</option><option>Производство</option><option>Офис/ТРЦ</option><option>Реконструкция</option></select></div>
+          </div>
+          <input type="text" name="hp" style="display:none">
+          <div class="mt-12"><button class="cta" type="submit">Запросить смету</button></div>
+          <div class="status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script>
+Promise.all([
+  fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
+  fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
+]);
+</script>
+</body></html>
+EOF
+
+          cat > projects.html << 'EOF'
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проекты — ДСМ‑груп</title>
+<link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css">
+</head><body>
+<div id="site-header"></div>
+<main>
+  <section class="section">
+    <div class="container">
+      <h2>Кейсы</h2>
+      <p class="sub">Несколько реализованных объектов.</p>
+
+      <div class="card project">
+        <img alt="Логистический центр" src="https://images.unsplash.com/photo-1590318230018-ed3a5f0a1a25?q=80&w=1200&auto=format&fit=crop" />
+        <div>
+          <h3>Логистический центр «Север»</h3>
+          <div class="dl"><div>Площадь</div><div>62 000 м², A+</div><div>Срок</div><div>11 мес.</div><div>Роль</div><div>Генподряд</div></div>
+          <form class="form mt-12" data-form novalidate>
+            <label>Рассчитать похожий проект</label>
+            <div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div>
+            <input type="text" name="hp" style="display:none">
+            <div class="mt-12"><button class="cta" type="submit">Получить расчёт</button></div>
+            <div class="status"></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card project mt-24">
+        <img alt="Производственный корпус" src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=1200&auto=format&fit=crop" />
+        <div>
+          <h3>Производственный корпус</h3>
+          <div class="dl"><div>Площадь</div><div>24 800 м²</div><div>Срок</div><div>14 мес.</div><div>Роль</div><div>Генподряд+проект</div></div>
+          <form class="form mt-12" data-form novalidate>
+            <label>Получить спецификацию</label>
+            <div class="row"><div><input name="name" required placeholder="Имя"></div><div><input name="phone" required placeholder="+7 (___) ___‑__‑__"></div></div>
+            <input type="text" name="hp" style="display:none">
+            <div class="mt-12"><button class="cta accent" type="submit">Отправить</button></div>
+            <div class="status"></div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script>
+Promise.all([
+  fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
+  fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
+]);
+</script>
+</body></html>
+EOF
+
+          cat > about.html << 'EOF'
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>О компании — ДСМ‑груп</title>
+<link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css">
+</head><body>
+<div id="site-header"></div>
+<main>
+  <section class="section">
+    <div class="container">
+      <h2>Кто мы</h2>
+      <p class="sub">Инжиниринговая и строительная компания полного цикла.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>Миссия</h3><p>Создаём предсказуемые по срокам и бюджету объекты для бизнеса.</p></div>
+        <div class="card"><h3>Подход</h3><p>Планирование, прозрачность и безопасность — основа решений.</p></div>
+        <div class="card"><h3>Качество</h3><p>ISO 9001/14001/45001, HSE‑культура, входной контроль.</p></div>
+      </div>
+
+      <div class="card mt-24">
+        <h3>Запросить презентацию компании</h3>
+        <form class="form mt-12" data-form novalidate>
+          <div class="row">
+            <div><label>Имя</label><input name="name" required></div>
+            <div><label>Email</label><input type="email" name="email" required></div>
+          </div>
+          <input type="text" name="hp" style="display:none">
+          <div class="mt-12"><button class="cta" type="submit">Получить презентацию</button></div>
+          <div class="status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script>
+Promise.all([
+  fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
+  fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
+]);
+</script>
+</body></html>
+EOF
+
+          cat > contacts.html << 'EOF'
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Контакты — ДСМ‑груп</title>
+<link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css">
+</head><body>
+<div id="site-header"></div>
+<main>
+  <section class="section">
+    <div class="container">
+      <h2>Контакты</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <h3>ДСМ‑груп</h3>
+          <p>Санкт-Петербург, Торфяная дорога 7Ф, офис 1023, БЦ «Гуливер‑2»</p>
+          <p>Тел.: <a href="tel:+79819795429">+7 (981) 979‑54‑29</a></p>
+          <p>Email: <a href="mailto:info@gk-dsm.ru">info@gk-dsm.ru</a></p>
+          <p>Пн‑Пт 09:00–19:00</p>
+        </div>
+        <div class="card">
+          <h3>Напишите нам</h3>
+          <form class="form mt-12" data-form novalidate>
+            <div class="row">
+              <div><label>Имя</label><input name="name" required></div>
+              <div><label>Телефон</label><input name="phone" required></div>
+              <div><label>Email</label><input type="email" name="email" required></div>
+              <div><label>Тема</label><select name="topic" required><option value="">Выберите...</option><option>Коммерческий запрос</option><option>Подряд</option><option>Карьера</option></select></div>
+            </div>
+            <label class="mt-12">Сообщение</label>
+            <textarea name="message" placeholder="Кратко опишите запрос"></textarea>
+            <input type="text" name="hp" style="display:none">
+            <div class="mt-12"><button class="cta" type="submit">Отправить</button></div>
+            <div class="status"></div>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Карта</h3>
+          <div class="map">Вставьте виджет Яндекс.Карт (Конструктор карт)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script>
+Promise.all([
+  fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
+  fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
+]);
+</script>
+</body></html>
+EOF
+
+          cat > privacy.html << 'EOF'
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Политика конфиденциальности — ДСМ‑груп</title>
+<link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/css/style.css">
+</head><body>
+<div id="site-header"></div>
+<main>
+  <section class="section">
+    <div class="container">
+      <h2>Политика конфиденциальности</h2>
+      <p class="sub">Как мы обрабатываем и защищаем персональные данные.</p>
+      <div class="card">
+        <p>Мы собираем минимально необходимую информацию (имя, телефон, email) для связи по вашему запросу. Данные не передаются третьим лицам без вашего согласия, кроме случаев, предусмотренных законом. Отправляя форму на сайте, вы соглашаетесь на обработку персональных данных.</p>
+        <p class="mt-12">По вопросам обработки данных пишите на <a href="mailto:info@gk-dsm.ru">info@gk-dsm.ru</a>.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script>
+Promise.all([
+  fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
+  fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
+]);
+</script>
+</body></html>
+EOF
+
+          cat > assets/logo.svg << 'EOF'
+<svg width="180" height="44" viewBox="0 0 420 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .a{fill:#1A554F}.b{fill:#B89F4D}.t{font:700 28px Inter, Arial, sans-serif;fill:#1A554F}
+      .s{font:600 14px Inter, Arial, sans-serif;fill:#B89F4D;letter-spacing:.5px}
+    </style>
+  </defs>
+  <path class="a" d="M10 60 L210 10 L410 60 L398 60 L210 20 L22 60 Z"/>
+  <rect class="a" x="305" y="35" width="12" height="20" rx="2"/>
+  <rect class="a" x="83" y="60" width="254" height="6" rx="3"/>
+  <rect class="a" x="63" y="72" width="294" height="6" rx="3"/>
+  <rect class="a" x="43" y="84" width="334" height="6" rx="3"/>
+  <circle class="a" cx="210" cy="40" r="2"/>
+  <g>
+    <text x="210" y="65" text-anchor="middle" class="t">DSM GROUP</text>
+    <text x="210" y="84" text-anchor="middle" class="s">ЗАГОРОДНОЕ СТРОИТЕЛЬСТВО</text>
+    <rect class="b" x="198" y="30" width="24" height="18" rx="2"/>
+    <line class="b" x1="210" y1="30" x2="210" y2="48" stroke="#F5E6B3" stroke-width="2"/>
+    <line class="b" x1="198" y1="39" x2="222" y2="39" stroke="#F5E6B3" stroke-width="2"/>
+  </g>
+</svg>
+EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Seed multi-page DSM site (green theme) with partials and lead forms"
+          git push

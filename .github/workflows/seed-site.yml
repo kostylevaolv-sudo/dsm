@@ -10,7 +10,8 @@ jobs:
   seed:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Generate site files
         shell: bash
@@ -19,7 +20,7 @@ jobs:
 
           # Структура
           mkdir -p assets/css assets/js partials
-          : > .nojekyll
+          touch .nojekyll
 
           # CSS
           cat > assets/css/style.css << 'EOF'
@@ -157,7 +158,6 @@ jobs:
 
           # JS
           cat > assets/js/main.js << 'EOF'
-          // Плавный скролл по якорям
           document.addEventListener('click', (e)=>{
             const a = e.target.closest('a[href^="#"]');
             if(!a) return;
@@ -166,7 +166,6 @@ jobs:
             if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
           });
 
-          // Активная ссылка меню
           (function setActiveNav(){
             const path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
             document.querySelectorAll('.menu a').forEach(a=>{
@@ -176,7 +175,6 @@ jobs:
             });
           })();
 
-          // Липкая панель CTA
           const sticky = document.getElementById('stickyBar');
           let stickyOnce = false;
           window.addEventListener('scroll', () => {
@@ -184,7 +182,6 @@ jobs:
             if(y > 600) sticky?.classList.add('show'); else if(!stickyOnce) sticky?.classList.remove('show');
           });
 
-          // Модалка
           const modal = document.getElementById('modal');
           document.addEventListener('click', (e)=>{
             if(e.target.closest('[data-open="callback"]')) modal?.classList.add('open');
@@ -192,13 +189,11 @@ jobs:
           });
           modal?.addEventListener('click', (e)=>{ if(e.target === modal) modal.classList.remove('open'); });
 
-          // Exit-intent
           let exitShown = false;
           document.addEventListener('mouseleave', (e)=>{
             if(e.clientY <= 0 && !exitShown){ exitShown = true; modal?.classList.add('open'); }
           });
 
-          // Универсальная отправка форм
           function attachForms(){
             document.querySelectorAll('form[data-form]').forEach(form=>{
               const status = form.querySelector('.status');
@@ -263,7 +258,6 @@ jobs:
           EOF
 
           cat > partials/footer.html << 'EOF'
-          <!-- Липкая панель -->
           <div class="sticky-bar" id="stickyBar" aria-hidden="true">
             <div class="inner">
               <span>Готовы обсудить проект?</span>
@@ -272,7 +266,6 @@ jobs:
             </div>
           </div>
 
-          <!-- Модалка -->
           <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="cbTitle">
             <div class="dialog">
               <div class="head">
@@ -328,9 +321,11 @@ jobs:
               </div>
             </div>
           </footer>
+
+          <script src="assets/js/main.js"></script>
           EOF
 
-          # index.html
+          # Index
           cat > index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="ru">
@@ -338,7 +333,6 @@ jobs:
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width,initial-scale=1" />
             <title>ДСМ‑груп — строительство промышленных и коммерческих объектов</title>
-            <meta name="description" content="Генподряд, проектирование и строительство промышленных и коммерческих объектов. Зелёная тема бренда. Смета за 24 часа." />
             <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
             <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -375,7 +369,6 @@ jobs:
                     <div class="card">
                       <div class="badge" style="border-color:#E9E2CF;background:#FBF6E7;color:#6E5A22">СРО • ISO 9001/14001/45001</div>
                       <p class="mt-12">Работаем по всей России и ЕАЭС. Фиксируем срок и цену. Прозрачная отчётность, авторнадзор, BIM и 4D‑планирование.</p>
-                      <p class="help mt-12">Документы и свидетельства предоставим по запросу.</p>
                     </div>
                   </div>
                 </div>
@@ -394,72 +387,25 @@ jobs:
                   </div>
                 </div>
               </section>
-
-              <section class="section alt">
-                <div class="container">
-                  <h2>Выбранные проекты</h2>
-                  <p class="sub">Полный портфель — по запросу.</p>
-                  <div class="card project">
-                    <img alt="Логистический комплекс" src="https://images.unsplash.com/photo-1590318230018-ed3a5f0a1a25?q=80&w=1200&auto=format&fit=crop" />
-                    <div>
-                      <h3>Логистический центр «Север»</h3>
-                      <div class="dl"><div>Локация</div><div>МО</div><div>Площадь</div><div>62 000 м²</div><div>Срок</div><div>11 мес.</div><div>Роль</div><div>Генподряд</div></div>
-                      <form class="form mt-12" data-form novalidate>
-                        <label>Получить расчёт по похожему проекту</label>
-                        <div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div>
-                        <input type="text" name="hp" style="display:none">
-                        <div class="mt-12"><button class="cta accent" type="submit">Получить расчёт</button></div>
-                        <div class="status"></div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="section">
-                <div class="container">
-                  <h2>Запросите смету</h2>
-                  <p class="sub">Вернёмся с предварительным решением в течение 24 часов.</p>
-                  <form class="form" data-form novalidate>
-                    <div class="row">
-                      <div><label>Имя и компания</label><input name="name" placeholder="Иван Петров, ООО «Пример»" required></div>
-                      <div><label>Телефон</label><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
-                      <div><label>Email</label><input type="email" name="email" placeholder="you@example.com" required></div>
-                      <div><label>Тип объекта</label><select name="type" required><option value="">Выберите...</option><option>Склад / Логистика</option><option>Производство</option><option>Торговый объект</option><option>Офис / БЦ</option><option>Реконструкция</option></select></div>
-                      <div><label>Площадь, м²</label><input name="area" placeholder="Например, 25000"></div>
-                      <div><label>Город</label><input name="city" placeholder="Город/регион"></div>
-                    </div>
-                    <label class="mt-12">Кратко о проекте</label>
-                    <textarea name="message" placeholder="Стадия, сроки, требования, бюджетные рамки..."></textarea>
-                    <input type="text" name="hp" style="display:none">
-                    <div class="mt-12"><input type="checkbox" id="agree" required> <label for="agree" class="help">Согласен(на) с обработкой данных</label></div>
-                    <div class="mt-12"><button class="cta accent" type="submit">Отправить запрос</button> <span class="help">или info@gk-dsm.ru</span></div>
-                    <div class="status"></div>
-                  </form>
-                </div>
-              </section>
             </main>
 
             <div id="site-footer"></div>
-
             <script>
               Promise.all([
                 fetch('partials/header.html').then(r=>r.text()).then(h=>document.getElementById('site-header').innerHTML=h),
                 fetch('partials/footer.html').then(r=>r.text()).then(f=>document.getElementById('site-footer').innerHTML=f),
-              ]).then(()=>{
-                const s=document.createElement('script'); s.src='assets/js/main.js'; document.body.appendChild(s);
-              });
+              ]);
             </script>
           </body>
           </html>
           EOF
 
-          # services.html
+          # Остальные страницы (услуги, проекты, компания, контакты, политика)
           cat > services.html << 'EOF'
           <!DOCTYPE html><html lang="ru"><head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
           <title>Услуги — ДСМ‑груп</title>
-          <link rel="icon" href="assets/logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css">
+          <link rel="stylesheet" href="assets/css/style.css">
           </head><body>
           <div id="site-header"></div>
           <main>
@@ -472,20 +418,13 @@ jobs:
                   <div class="card"><div class="icon">📐</div><h3>Проектирование</h3><ul class="list"><li>BIM/4D, коллизии</li><li>Изыскания</li><li>АР/КР/ОВ/ВК/ЭО/СС</li></ul></div>
                   <div class="card"><div class="icon">🧰</div><h3>Инженерные системы</h3><ul class="list"><li>ОВ/ВК/ЭО/СС</li><li>Пожарная безопасность</li><li>SCADA, слаботочка</li></ul></div>
                 </div>
-
-                <div class="grid cols-3 mt-24">
-                  <div class="card"><div class="icon">🏭</div><h3>Промышленные здания</h3><ul class="list"><li>Корпуса, цеха</li><li>КМ/КМД, ЖБ</li><li>Краны, проёмы</li></ul></div>
-                  <div class="card"><div class="icon">📦</div><h3>Склады A/A+</h3><ul class="list"><li>Доки, ESFR</li><li>Температурные зоны</li><li>WMS‑инфраструктура</li></ul></div>
-                  <div class="card"><div class="icon">🏢</div><h3>Офисы и ТРЦ</h3><ul class="list"><li>Оболочка и fit‑out</li><li>BMS, МГН</li><li>Навигация</li></ul></div>
-                </div>
-
                 <div class="card mt-24">
                   <h3>Получить предварительную смету</h3>
                   <form class="form mt-12" data-form novalidate>
                     <div class="row">
                       <div><label>Имя</label><input name="name" required></div>
-                      <div><label>Телефон</label><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div>
-                      <div><label>Email</label><input type="email" name="email" placeholder="you@example.com" required></div>
+                      <div><label>Телефон</label><input name="phone" required></div>
+                      <div><label>Email</label><input type="email" name="email" required></div>
                       <div><label>Тип объекта</label><select name="type" required><option value="">Выберите...</option><option>Склад</option><option>Производство</option><option>Офис/ТРЦ</option><option>Реконструкция</option></select></div>
                     </div>
                     <input type="text" name="hp" style="display:none">
@@ -506,12 +445,11 @@ jobs:
           </body></html>
           EOF
 
-          # projects.html
           cat > projects.html << 'EOF'
           <!DOCTYPE html><html lang="ru"><head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
           <title>Проекты — ДСМ‑груп</title>
-          <link rel="icon" href="assets/logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css">
+          <link rel="stylesheet" href="assets/css/style.css">
           </head><body>
           <div id="site-header"></div>
           <main>
@@ -527,7 +465,7 @@ jobs:
                     <div class="dl"><div>Площадь</div><div>62 000 м², A+</div><div>Срок</div><div>11 мес.</div><div>Роль</div><div>Генподряд</div></div>
                     <form class="form mt-12" data-form novalidate>
                       <label>Рассчитать похожий проект</label>
-                      <div class="row"><div><input name="name" placeholder="Имя" required></div><div><input name="phone" placeholder="+7 (___) ___‑__‑__" required></div></div>
+                      <div class="row"><div><input name="name" required placeholder="Имя"></div><div><input name="phone" required placeholder="+7 (___) ___‑__‑__"></div></div>
                       <input type="text" name="hp" style="display:none">
                       <div class="mt-12"><button class="cta" type="submit">Получить расчёт</button></div>
                       <div class="status"></div>
@@ -563,12 +501,11 @@ jobs:
           </body></html>
           EOF
 
-          # about.html
           cat > about.html << 'EOF'
           <!DOCTYPE html><html lang="ru"><head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
           <title>О компании — ДСМ‑груп</title>
-          <link rel="icon" href="assets/logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css">
+          <link rel="stylesheet" href="assets/css/style.css">
           </head><body>
           <div id="site-header"></div>
           <main>
@@ -607,12 +544,11 @@ jobs:
           </body></html>
           EOF
 
-          # contacts.html
           cat > contacts.html << 'EOF'
           <!DOCTYPE html><html lang="ru"><head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
           <title>Контакты — ДСМ‑груп</title>
-          <link rel="icon" href="assets/logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css">
+          <link rel="stylesheet" href="assets/css/style.css">
           </head><body>
           <div id="site-header"></div>
           <main>
@@ -661,12 +597,11 @@ jobs:
           </body></html>
           EOF
 
-          # privacy.html
           cat > privacy.html << 'EOF'
           <!DOCTYPE html><html lang="ru"><head>
           <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
           <title>Политика конфиденциальности — ДСМ‑груп</title>
-          <link rel="icon" href="assets/logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css">
+          <link rel="stylesheet" href="assets/css/style.css">
           </head><body>
           <div id="site-header"></div>
           <main>
@@ -691,7 +626,7 @@ jobs:
           </body></html>
           EOF
 
-          # Временный SVG-логотип (fallback). Загрузите свой logo.png в assets/ при желании.
+          # Временный SVG-логотип (fallback). После запуска можете загрузить свой assets/logo.png
           cat > assets/logo.svg << 'EOF'
           <svg width="180" height="44" viewBox="0 0 420 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
